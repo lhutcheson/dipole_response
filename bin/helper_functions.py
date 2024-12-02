@@ -5,7 +5,6 @@ Functions to help with the analysis
 @authors: Lynda Hutcheson, Maximillian Hartmann
 """
 
-# from scipy import constants
 import numpy as np
 import scipy.constants as cnt
 from argparse import ArgumentParser as AP
@@ -109,7 +108,7 @@ def AugerDecayFactor(time_in_au, t_zero=904.1058):
     return decay
 
 
-def get_complex_dipole(dipole_data, e_res=60.85):
+def get_complex_dipole(dipole_data, e_res=60.87):
     """
     From the time-dependent dipole expectation value obtained from RMT,
     calculate the frequency-resolved dipole evaluated at the energy of the
@@ -123,7 +122,7 @@ def get_complex_dipole(dipole_data, e_res=60.85):
         DataFrame containing the time-dependent dipole expectation value for each
         time delay in the scan.
     e_res : float
-        Default = 60.85
+        Default = 60.87
         the energy of the transition under investigation in the ATAS study.
     """
     file_length = len(dipole_data)
@@ -465,7 +464,7 @@ def read_command_line():
     parser.add_argument('-o', '--output', help="save data to file",
                         action='store_true', default=False)
     parser.add_argument('-i', '--IR_intensity',
-                        type=float, help="IR intensity", default=1.9)
+                        type=float, help="IR intensity", default=0.8)
     parser.add_argument('-r', '--read_all',
                         help="read all data from file rather than recalculate",
                         action='store_true', default=False)
