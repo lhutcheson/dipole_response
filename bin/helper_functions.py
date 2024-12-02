@@ -48,7 +48,8 @@ def fs_to_au(time_in_femto_seconds):
     Parameters
     ----------
     time_in_femto_seconds : float
-        The time value in femtoseconds (fs) to be converted to atomic units (au).
+        The time value in femtoseconds (fs) to be converted to atomic units
+        (au).
 
     Returns
     -------
@@ -65,7 +66,8 @@ def au_to_ev(energy_in_au):
     Parameters
     ----------
     energy_in_au : float
-        The energy value in atomic units (au) to be converted to electron volts (eV).
+        The energy value in atomic units (au) to be converted to electron volts
+        (eV).
 
     Returns
     -------
@@ -83,7 +85,8 @@ def ev_to_au(energy_in_ev):
     Parameters
     ----------
     energy_in_ev : float
-        The energy value in electron volts (eV) to be converted to atomic units (au).
+        The energy value in electron volts (eV) to be converted to atomic units
+        (au).
 
     Returns
     -------
@@ -98,25 +101,28 @@ def AugerDecayFactor(time_in_au, t_zero=904.1058):
     """
     Simulates the Auger decay in the dipole.
 
-    The Auger decay is modeled as an exponential decay with the form:
-    exp(-t / lifetime), where the lifetime is derived from the resonance linewidth. 
-    This function calculates the decay factor at each time point relative to the time
-    at which the XUV pulse ends (defined as `t_zero`), which is typically one full
-    width at half maximum (FWHM) after the peak of the XUV pulse.
+    The Auger decay is modeled as an exponential decay with the form: exp(-t /
+    lifetime), where the lifetime is derived from the resonance linewidth. This
+    function calculates the decay factor at each time point relative to the
+    time at which the XUV pulse ends (defined as `t_zero`), which is typically
+    one full width at half maximum (FWHM) after the peak of the XUV pulse.
 
     Parameters
     ----------
     time_in_au : list-like
-        An array of times at which the dipole has been evaluated, in atomic units (au).
+        An array of times at which the dipole has been evaluated, in atomic
+        units (au).
 
     t_zero : float, optional
-        The time at which to start the exponential decay, by default taken to be the
-        end of the XUV pulse (1 FWHM after the peak of the XUV pulse): 904.1058.
+        The time at which to start the exponential decay, by default taken to
+        be the end of the XUV pulse (1 FWHM after the peak of the XUV pulse):
+        904.1058.
 
     Returns
     -------
     numpy.ndarray
-        An array for the decay factors, calculated for each time point in `time_in_au`.
+        An array for the decay factors, calculated for each time point in
+        `time_in_au`.
     """
     time = time_in_au - t_zero
     lifetime = 1/(ev_to_au(literature_linewidth)/2)
@@ -129,18 +135,18 @@ def get_complex_dipole(dipole_data, e_res=60.85):
     """
     From the time-dependent dipole expectation value obtained from RMT,
     calculate the frequency-resolved dipole evaluated at the energy of the
-    transition.
-    The dipole is treated in the same as when the absorption profile is calculated:
-    padded with zeros and windowed with an exponential decay to simulate Auger decay.
+    transition. The dipole is treated in the same as when the absorption
+    profile is calculated: padded with zeros and windowed with an exponential
+    decay to simulate Auger decay.
 
     Parameters
     ----------
     dipole_data : Pandas DataFrame
-        DataFrame containing the time-dependent dipole expectation value for each
-        time delay in the scan.
+        DataFrame containing the time-dependent dipole expectation value for
+        each time delay in the scan.
     e_res : float
-        Default = 60.87
-        the energy of the transition under investigation in the ATAS study.
+        Default = 60.87 the energy of the transition under investigation in the
+        ATAS study.
     """
     file_length = len(dipole_data)
     desired_length = 2**22
@@ -182,13 +188,13 @@ def DCM_lineshape(energy_axis, z, phi, resonance_energy, gamma):
         line width
 
     Returns:
-        np.array size of energy axis
-        line shape function as a function of photon energy
-
+        np.array size of energy axis line shape function as a function of
+        photon energy
     """
 
     lineshape = (gamma/2*np.cos(phi) - (energy_axis-resonance_energy)
-                 * np.sin(phi)) / ((energy_axis-resonance_energy)**2 + gamma**2/4)
+                 * np.sin(phi)) / ((energy_axis-resonance_energy)**2
+                                   + gamma**2/4)
 
     return z * lineshape
 
@@ -196,7 +202,7 @@ def DCM_lineshape(energy_axis, z, phi, resonance_energy, gamma):
 def fit_lineshapes(energy_axis, z, phi, gamma, background):
     """
     Fit function to extract line shape parameters from several absorption lines
-    from the measurement data. 
+    from the measurement data.
 
     Parameters
     ----------
@@ -211,9 +217,8 @@ def fit_lineshapes(energy_axis, z, phi, gamma, background):
     gamma :   float
         line width
 
-    Returns:
-    model : np.array size of energy axis
-            Calculates an optical density as a function of photon energy. 
+    Returns: model : np.array size of energy axis
+            Calculates an optical density as a function of photon energy.
             Includes a constant offset to fit the non-resonant background.
     """
     model = DCM_lineshape(energy_axis, z*gamma, phi, e_res, gamma)
@@ -224,7 +229,8 @@ def fit_lineshapes(energy_axis, z, phi, gamma, background):
 
 def truncate_td(time_delay_axis, lower=-2.75, upper=2.75):
     """
-    Returns the indexes required for slicing data over a given time delay range [lower_time, upper_time]
+    Returns the indexes required for slicing data over a given time delay range
+    [lower_time, upper_time]
 
     Parameters
     ----------
@@ -250,7 +256,7 @@ def truncate_td(time_delay_axis, lower=-2.75, upper=2.75):
 
 def gauss_envelope(intensity, time, FWHM=186):
     """
-    Function to get the gaussian envelope of the NIR pulse. 
+    Function to get the gaussian envelope of the NIR pulse.
 
     Parameters
     ----------
@@ -275,7 +281,7 @@ def gauss_envelope(intensity, time, FWHM=186):
 
 def pulse(intensity, time=np.arange(-10, 10, 0.1), FWHM=186, IR_freq=0.06798):
     """
-    Function to get the NIR pulse with a gaussian envelope. 
+    Function to get the NIR pulse with a gaussian envelope.
 
     Parameters
     ----------
@@ -305,8 +311,8 @@ def pulse(intensity, time=np.arange(-10, 10, 0.1), FWHM=186, IR_freq=0.06798):
 def fit_model_line(line, energy_axis):
     """
     Function to fit an absorption profile with the generalised lineshape,
-    obtains the amplitude (z) and dipole phase (phi)
-    and return the complex dipole response in the form:
+    obtains the amplitude (z) and dipole phase (phi) and return the complex
+    dipole response in the form:
             z*exp(i*phi)
 
     Parameters
@@ -324,8 +330,8 @@ def fit_model_line(line, energy_axis):
     p_init = [1, 0, 0.122, 0]
     bounds = ([1e-6,  -2*np.pi, 0.2*0.122, -15],
               [np.inf, 2*np.pi, 15*0.122, 20])
-    popt, pcov = curve_fit(fit_lineshapes, energy_axis, line, p_init, maxfev=1000000,
-                           bounds=bounds)
+    popt, pcov = curve_fit(fit_lineshapes, energy_axis, line, p_init,
+                           maxfev=1000000, bounds=bounds)
     strength = popt[0]
     phase = popt[1]
     return strength*np.exp(1j*phase)
@@ -349,48 +355,49 @@ def model(IR_FWHM=186,
     Parameters
     ----------
     IR_FWHM : float
-                Default = 186 
-                FWHM of NIR pulse in atomic units of time
+        Default = 186
+        FWHM of NIR pulse in atomic units of time
 
     IR_freq : float
-                Default = 0.06798, 
-                Frequency of NIR pulse in atomic units
+        Default = 0.06798
+        Frequency of NIR pulse in atomic units
 
     Max_ION : float
-                Default = 0.08, 
-                Maximum amplitude of the ionisation channel
+        Default = 0.08
+        Maximum amplitude of the ionisation channel
 
     Max_E1 : float
-                Default = 0.03,
-                Maximum amplitude of the 1st excitation channel
+        Default = 0.03
+        Maximum amplitude of the 1st excitation channel
 
     Max_E2 : float
-                Default = 0.03, 
-                Maximum amplitude of the 2nd excitation channel
+        Default = 0.03
+        Maximum amplitude of the 2nd excitation channel
 
     Phi_ION : Float
-                Default = 0, 
-                Phase assigned to the ionisation channel (radians)
+        Default = 0
+        Phase assigned to the ionisation channel (radians)
 
     Phi_E1 : Float
-                Default = -2.2, 
-                Phase assigned to the 1st excitation channel (radians)
+        Default = -2.2
+        Phase assigned to the 1st excitation channel (radians)
 
     Phi_E2 : Float
-                Default = -1.3, 
-                Phase assigned to the 2nd excitation channel (radians)
+        Default = -1.3
+        Phase assigned to the 2nd excitation channel (radians)
 
     excited_delay :  Float
-                Default = 0.3, 
-                delay between the two excitation channels in femtoseconds
+        Default = 0.3
+        delay between the two excitation channels in femtoseconds
 
     time : numpy array
-                Default = np.arange(-10, 10, 0.1),
-                the time axis to be used
+        Default = np.arange(-10, 10, 0.1)
+        the time axis to be used
 
     smooth : Boolean
-                Default = False 
-                Option to model the overall response using the NIR envelope instead of the pulse
+        Default = False
+        Option to model the overall response using the NIR envelope instead of
+        the pulse
 
     Returns:
         The time-dependent complex dipole response
@@ -434,9 +441,9 @@ def model(IR_FWHM=186,
 
 def get_complex_data(dataframe, transition='T1', truncate=True):
     """
-    Reads in a DataFrame containing the line strength (Z) and dipole phase (phi)
-    fit parameters to the absorption spectrum for each time delay. Returns
-    the complex-valued dipole response of the form:
+    Reads in a DataFrame containing the line strength (Z) and dipole phase
+    (phi) fit parameters to the absorption spectrum for each time delay.
+    Returns the complex-valued dipole response of the form:
             Z*exp(i*phi)
     for the desired transition (T1, T2 or T3).
 
@@ -458,7 +465,8 @@ def get_complex_data(dataframe, transition='T1', truncate=True):
     """
     time = dataframe['Time Delays'].to_numpy()
     complex_dat = (
-        dataframe[f'Line Strength {transition}']*np.exp(1j*(dataframe[f'Phase {transition}'])))
+        dataframe[f'Line Strength {transition}'] * np.exp(
+            1j*(dataframe[f'Phase {transition}'])))
 
     if truncate:
         lower_index, upper_index = truncate_td(

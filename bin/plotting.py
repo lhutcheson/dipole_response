@@ -1,13 +1,16 @@
 import matplotlib.pyplot as plt
-from helper_functions import fit_lineshapes, get_complex_data, get_complex_dipole, au_to_fs
+from helper_functions import (fit_lineshapes,
+                              get_complex_data,
+                              get_complex_dipole,
+                              au_to_fs)
 import numpy as np
 
 
 def plot_fit_params(params, label, colour, truncate=True, fig=None, axs=None):
     """
-    Given the time-delays and the fit parameters, plot the line strength, phase,
-    and line width as a function of time delay on the provided figure and axes,
-    or create new ones if not provided.
+    Given the time-delays and the fit parameters, plot the line strength,
+    phase, and line width as a function of time delay on the provided figure
+    and axes, or create new ones if not provided.
 
     Parameters
     ----------
@@ -34,8 +37,8 @@ def plot_fit_params(params, label, colour, truncate=True, fig=None, axs=None):
     Notes
     -----
     - The function plots the line strength and phase as a function of time
-      delay, with shaded regions representing the error margins (± error) around
-      each data point.
+      delay, with shaded regions representing the error margins (± error)
+      around each data point.
     - The function assumes that the 'params' DataFrame contains the following
       columns:
         * 'Time Delays' — the time delay values (in fs).
@@ -77,8 +80,8 @@ def plot_fit_params(params, label, colour, truncate=True, fig=None, axs=None):
 def plot_OD(OD_exper, OD_RMT):
     """
     Given the experimental and RMT optical density (OD) data as a function of
-    energy and time delay, this function generates a surface plot comparing both
-    datasets.
+    energy and time delay, this function generates a surface plot comparing
+    both datasets.
 
     Parameters
     ----------
@@ -100,16 +103,20 @@ def plot_OD(OD_exper, OD_RMT):
     fig.subplots_adjust(right=0.9, left=0.1, top=0.9, bottom=0.15, wspace=0.2)
 
     # Plot the experimental optical density
-    im = ax[0].pcolor(OD_exper.index.values, [float(x) for x in OD_exper.columns],
-                      OD_exper.transpose(), **paramdict)
+    ax[0].pcolor(OD_exper.index.values,
+                 [float(x) for x in OD_exper.columns],
+                 OD_exper.transpose(),
+                 **paramdict)
 
     # Plot the reconstructed optical density
-    im2 = ax[1].pcolor(OD_RMT.index.values, [float(x) for x in OD_RMT.columns],
-                       OD_RMT.transpose(), **paramdict)
+    im2 = ax[1].pcolor(OD_RMT.index.values,
+                       [float(x) for x in OD_RMT.columns],
+                       OD_RMT.transpose(),
+                       **paramdict)
 
     # Add a colorbar
     cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.75])
-    cbar = fig.colorbar(im2, cax=cbar_ax)
+    fig.colorbar(im2, cax=cbar_ax)
     cbar_ax.set_title('OD')
 
     # Set axis labels and titles
@@ -125,11 +132,15 @@ def plot_OD(OD_exper, OD_RMT):
     plt.show()
 
 
-def plot_model_amplitudes(time, ion_pop, excited_pop, excited_pop2, smooth_excited):
+def plot_model_amplitudes(time,
+                          ion_pop,
+                          excited_pop,
+                          excited_pop2,
+                          smooth_excited):
     """
     Plot the time-dependent amplitudes for each channel used in the model. The
-    function visualizes the ionization channel, two excitation channels, and the
-    overall excitation (smoothed) as a function of time.
+    function visualizes the ionization channel, two excitation channels, and
+    the overall excitation (smoothed) as a function of time.
 
     Parameters
     ----------
@@ -185,7 +196,11 @@ def plot_model_amplitudes(time, ion_pop, excited_pop, excited_pop2, smooth_excit
     plt.show()
 
 
-def plot_model_lineshapes(energy_axis, phases, strength=1, linewidth=0.122, background=0):
+def plot_model_lineshapes(energy_axis,
+                          phases,
+                          strength=1,
+                          linewidth=0.122,
+                          background=0):
     """
     Plot the modeled lineshapes for the different effective channels--
     ionisation (ION), excitation 1 (E1), excitation 2 (E2), `bulk' excitation
@@ -203,12 +218,12 @@ def plot_model_lineshapes(energy_axis, phases, strength=1, linewidth=0.122, back
         lineshape for the corresponding channel.
 
     strength : float, optional
-        The strength factor for the lineshapes (default is 1). This controls the
-        amplitude of the lineshape.
+        The strength factor for the lineshapes (default is 1). This controls
+        the amplitude of the lineshape.
 
     linewidth : float, optional
-        The linewidth parameter for the lineshape model (default is 0.122). This
-        controls the width of the peak.
+        The linewidth parameter for the lineshape model (default is 0.122).
+        This controls the width of the peak.
 
     background : float, optional
         The background value to be added to the lineshape (default is 0). This
@@ -238,24 +253,25 @@ def plot_model_complex(complex_dipole_response,
                                 '#5f5fd3ff', '#ff5555ff'],
                        labels=['1', '2', '3', '4']):
     """
-    Plot the real vs. imaginary components of multiple complex dipole responses. 
-    This function generates a 2D plot for each complex-valued motion, where the 
-    real part is plotted on the x-axis and the imaginary part on the y-axis.
+    Plot the real vs. imaginary components of multiple complex dipole
+    responses. This function generates a 2D plot for each complex-valued
+    motion, where the real part is plotted on the x-axis and the imaginary part
+    on the y-axis.
 
     Parameters
     ----------
     complex_dipole_response : list of complex ndarray or list-like
-        A list of complex-valued motions (or trajectories) to be plotted. Each entry
-        in the list should be a 1D array of complex dipole responses.
+        A list of complex-valued motions (or trajectories) to be plotted. Each
+        entry in the list should be a 1D array of complex dipole responses.
 
     colours : list of str, optional
-        A list of colors to be used for each motion in the plot. 
+        A list of colors to be used for each motion in the plot.
         Default is ['#7f3aacfd', '#71c837ff', '#5f5fd3ff', '#ff5555ff'].
                      Purple,      Green,       Blue,        Red
 
     labels : list of str, optional
-        A list of labels to be used in the plot legend. Each label corresponds to 
-        a different response in the `complex_dipole_response` list. 
+        A list of labels to be used in the plot legend. Each label corresponds
+        to a different response in the `complex_dipole_response` list.
         Default is ['1', '2', '3', '4'].
     """
     plt.figure(3)
@@ -274,20 +290,26 @@ def plot_model_complex(complex_dipole_response,
 
 def plot_populations(pop_file):
     """
-    Plot the time-dependent populations of different regions/states: ground state, outer region, 
-    and bound state as a function of time. The function uses a twin y-axis to plot the ground state 
-    population separately from the outer region and bound state populations, which are plotted on the primary y-axis.
+    Plot the time-dependent populations of different regions/states: ground
+    state, outer region, and bound state as a function of time. The function
+    uses a twin y-axis to plot the ground state population separately from the
+    outer region and bound state populations, which are plotted on the primary
+    y-axis.
 
     Parameters
     ----------
     pop_file : pd.DataFrame
-        A DataFrame containing the population data. It should include the following columns:
-        - 'Time': The time points at which the populations are measured (in atomic units).
+        A DataFrame containing the population data. It should include the
+        following columns:
+        - 'Time': The time points at which the populations are measured
+                    (in atomic units).
         - 'Ground': The population of the ground state at each time point.
         - 'Outer': The population of the outer region at each time point.
-        - 'Bound': The total population of the bound states in the 1PO symmetry at each time point.
+        - 'Bound': The total population of the bound states in the 1PO symmetry
+                    at each time point.
     """
-    # Convert time to femtoseconds and shift such that centre of NIR pulse is at 0fs
+    # Convert time to femtoseconds and shift such that centre of NIR pulse is
+    # at 0fs
     time_fs = au_to_fs(pop_file['Time']-900)
 
     fig = plt.figure(1)
@@ -327,7 +349,8 @@ def plot_complex_single_intensity(RMT, exper, RMT_detuned, RMT_dipole):
     RMT : pd.DataFrame
         A DataFrame containing the fitting results to the RMT absorption
         spectrum for the transition 'T1'. This should include the fitted line
-        strength ['Line Strength T1'] and phase ['Phase T1'] for the transition.
+        strength ['Line Strength T1'] and phase ['Phase T1'] for the
+        transition.
 
     exper : pd.DataFrame
         A DataFrame containing the fitting results to the experimental spectrum
