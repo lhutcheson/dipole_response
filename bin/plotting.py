@@ -80,3 +80,31 @@ def plot_model_complex(complex_motions,
     plt.xlabel('Real')
     plt.ylabel('Imaginary')
     plt.show()
+
+
+def plot_populations(pop_file):
+    time_fs = (pop_file['Time']-900)/41.341
+
+    fig = plt.figure(1)
+    ax = fig.add_subplot(111)
+    ax2 = ax.twinx()
+
+    ax2.plot(time_fs, pop_file['Ground'],
+             color='darkorange', linewidth=2, alpha=0.8)
+    ax2.set_ylabel('GS Pop.')
+    ax2.set_xlabel('Time (fs)')
+    ax2.yaxis.label.set_color('darkorange')
+    ax2.set_ybound(0.6, 1.01)
+    ax2.tick_params(axis='y', colors='darkorange')
+
+    ax.plot(time_fs, pop_file['Outer'],
+            color='#7f3aacfd', linewidth=2, label='Outer Region Population')
+    ax.plot(time_fs, pop_file['Bound'],
+            color='#71c837ff', linewidth=2, label='Bound Population')
+
+    ax.set_ylabel('Population')
+    ax.set_xlabel('Time (fs)')
+    ax.set_xbound(-8, 10)
+    plt.tight_layout()
+    ax.legend(loc='upper right')
+    plt.show()
