@@ -26,45 +26,51 @@ gv_resolution_M4_M5 = 0.043  # experimental resolution
 
 def au_to_fs(time_in_au):
     """
-    Converts atomic unit to femtoseconds
-    Parameter:
-    ----------
-    time_in_au:   float
-        The time to convert.
+    Converts time from atomic units (au) to femtoseconds (fs).
 
-    Returns:
-        The time in femto seconds
-        Type: float
+    Parameters
+    ----------
+    time_in_au : float
+        The time value in atomic units (au) to be converted to femtoseconds.
+
+    Returns
+    -------
+    float
+        The equivalent time in femtoseconds (fs).
     """
     return time_in_au * cnt.value("atomic unit of time") / cnt.femto
 
 
 def fs_to_au(time_in_femto_seconds):
     """
-    Converts femtoseconds to atomic unit
-    Parameter:
-    ----------
-    time_in_femto_seconds: float
-        The time to convert.
+    Converts time from femtoseconds (fs) to atomic units (au).
 
-    Returns:
-        The time in atomic units
-        Type: float
+    Parameters
+    ----------
+    time_in_femto_seconds : float
+        The time value in femtoseconds (fs) to be converted to atomic units (au).
+
+    Returns
+    -------
+    float
+        The equivalent time in atomic units (au).
     """
     return time_in_femto_seconds * cnt.femto / cnt.value("atomic unit of time")
 
 
 def au_to_ev(energy_in_au):
     """
-    Converts atomic units to electron volt
-    Parameter:
-    ----------
-    energy_in_au: float
-        The energy to convert.
+    Converts energy from atomic units (au) to electron volts (eV).
 
-    Returns:
-        The energy in electron volts
-        Type: float
+    Parameters
+    ----------
+    energy_in_au : float
+        The energy value in atomic units (au) to be converted to electron volts (eV).
+
+    Returns
+    -------
+    float
+        The equivalent energy in electron volts (eV).
     """
     ev_to_joule = energy_in_au * cnt.value("atomic unit of energy")
     return ev_to_joule / cnt.value("electron volt-joule relationship")
@@ -72,16 +78,17 @@ def au_to_ev(energy_in_au):
 
 def ev_to_au(energy_in_ev):
     """
-    Converts atomic units to electron volt
-    Parameter:
+    Converts energy from electron volts (eV) to atomic units (au).
+
+    Parameters
     ----------
-    energy_in_ev: float
-        The energy to convert.
+    energy_in_ev : float
+        The energy value in electron volts (eV) to be converted to atomic units (au).
 
-
-    Returns:
-        The energy in atomic units
-        Type: float
+    Returns
+    -------
+    float
+        The equivalent energy in atomic units (au).
     """
     ev_to_joule = energy_in_ev * cnt.value("electron volt-joule relationship")
     return ev_to_joule / cnt.value("atomic unit of energy")
@@ -89,17 +96,27 @@ def ev_to_au(energy_in_ev):
 
 def AugerDecayFactor(time_in_au, t_zero=904.1058):
     """
-    Prepare the exponential decay factor to simulate Auger decay in the
-    simulated dipole. The decay factor is exp(-t/lifetime) where liftime is the
-    life time of the resonance (computed from the linewidth
+    Simulates the Auger decay in the dipole.
+
+    The Auger decay is modeled as an exponential decay with the form:
+    exp(-t / lifetime), where the lifetime is derived from the resonance linewidth. 
+    This function calculates the decay factor at each time point relative to the time
+    at which the XUV pulse ends (defined as `t_zero`), which is typically one full
+    width at half maximum (FWHM) after the peak of the XUV pulse.
 
     Parameters
     ----------
     time_in_au : list-like
-        array of times at which the dipole has been evaluated in atomic units.
-    t_zero : float
-        the time at which to start the exponential decay which is the end of
-        the XUV pulse: 1 FWHM after the peak of the XUV.
+        An array of times at which the dipole has been evaluated, in atomic units (au).
+
+    t_zero : float, optional
+        The time at which to start the exponential decay, by default taken to be the
+        end of the XUV pulse (1 FWHM after the peak of the XUV pulse): 904.1058.
+
+    Returns
+    -------
+    numpy.ndarray
+        An array for the decay factors, calculated for each time point in `time_in_au`.
     """
     time = time_in_au - t_zero
     lifetime = 1/(ev_to_au(literature_linewidth)/2)
@@ -108,7 +125,7 @@ def AugerDecayFactor(time_in_au, t_zero=904.1058):
     return decay
 
 
-def get_complex_dipole(dipole_data, e_res=60.87):
+def get_complex_dipole(dipole_data, e_res=60.85):
     """
     From the time-dependent dipole expectation value obtained from RMT,
     calculate the frequency-resolved dipole evaluated at the energy of the
@@ -392,8 +409,6 @@ def model(IR_FWHM=186,
     else:
         IR = pulse(0.8, time, IR_FWHM, IR_freq)
         IR_delay = pulse(0.8, time-excited_delay, IR_FWHM, IR_freq)
-    # envelope = gauss_envelope(0.8, time, IR_FWHM)
-    # envelope_delay = gauss_envelope(0.8, time-excited_delay, IR_FWHM)
 
     ION_amplitude = cumulative_trapezoid(IR**2, time_au, initial=0)
     E1_amplitude = IR**2
