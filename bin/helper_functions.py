@@ -18,9 +18,9 @@ from scipy.optimize import curve_fit
 pldp_au = 0.77              # path-length-density-product in atomic units
 alpha = cnt.constants.fine_structure
 lineshape_constant = pldp_au/np.log(10)*4*np.pi*alpha
-e_res = 55.37  # resonance energy (eV)
-# e_res = 56.07
+literature_linewidth = 0.122
 
+e_res = 55.37  # resonance energy (eV)
 energy_shift = -5.5  # energy shift (eV) to match RMT result with experiment
 gv_resolution_M4_M5 = 0.043  # experimental resolution
 
@@ -28,9 +28,10 @@ gv_resolution_M4_M5 = 0.043  # experimental resolution
 def au_to_fs(time_in_au):
     """
     Converts atomic unit to femtoseconds
-    Argument:
-        - time_in_au:   float
-                The time to convert.
+    Parameter:
+    ----------
+    time_in_au:   float
+        The time to convert.
 
     Returns:
         The time in femto seconds
@@ -42,9 +43,10 @@ def au_to_fs(time_in_au):
 def fs_to_au(time_in_femto_seconds):
     """
     Converts femtoseconds to atomic unit
-    Argument:
-        - time_in_femto_seconds: float
-                The time to convert.
+    Parameter:
+    ----------
+    time_in_femto_seconds: float
+        The time to convert.
 
     Returns:
         The time in atomic units
@@ -56,9 +58,10 @@ def fs_to_au(time_in_femto_seconds):
 def au_to_ev(energy_in_au):
     """
     Converts atomic units to electron volt
-    Argument:
-        - energy_in_au: float
-                The energy to convert.
+    Parameter:
+    ----------
+    energy_in_au: float
+        The energy to convert.
 
     Returns:
         The energy in electron volts
@@ -71,9 +74,10 @@ def au_to_ev(energy_in_au):
 def ev_to_au(energy_in_ev):
     """
     Converts atomic units to electron volt
-    Argument:
-        - energy_in_ev: float
-                The energy to convert.
+    Parameter:
+    ----------
+    energy_in_ev: float
+        The energy to convert.
 
 
     Returns:
@@ -82,6 +86,66 @@ def ev_to_au(energy_in_ev):
     """
     ev_to_joule = energy_in_ev * cnt.value("electron volt-joule relationship")
     return ev_to_joule / cnt.value("atomic unit of energy")
+
+
+def AugerDecayFactor(time_in_au, t_zero=904.1058):
+    """
+    Prepare the exponential decay factor to simulate Auger decay in the
+    simulated dipole. The decay factor is exp(-t/lifetime) where liftime is the
+    life time of the resonance (computed from the linewidth
+
+    Parameters
+    ----------
+    time_in_au : list-like
+        array of times at which the dipole has been evaluated in atomic units.
+    t_zero : float
+        the time at which to start the exponential decay which is the end of
+        the XUV pulse: 1 FWHM after the peak of the XUV.
+    """
+    time = time_in_au - t_zero
+    lifetime = 1/(ev_to_au(literature_linewidth)/2)
+    decay = np.exp(- time/lifetime)
+    decay[time < 0] = 1
+    return decay
+
+
+def get_complex_dipole(dipole_data, e_res=60.85):
+    """
+    From the time-dependent dipole expectation value obtained from RMT,
+    calculate the frequency-resolved dipole evaluated at the energy of the
+    transition.
+    The dipole is treated in the same as when the absorption profile is calculated:
+    padded with zeros and windowed with an exponential decay to simulate Auger decay.
+
+    Parameters
+    ----------
+    dipole_data : Pandas DataFrame
+        DataFrame containing the time-dependent dipole expectation value for each
+        time delay in the scan.
+    e_res : float
+        Default = 60.85
+        the energy of the transition under investigation in the ATAS study.
+    """
+    file_length = len(dipole_data)
+    desired_length = 2**22
+    num_zeros_to_pad = desired_length - file_length
+
+    decay = AugerDecayFactor(dipole_data['Time'])
+
+    dt = dipole_data['Time'][1] - dipole_data['Time'][0]
+    w = np.fft.fftfreq(desired_length, dt/(2*np.pi))
+    w_ev = au_to_ev(w)
+
+    res_index = np.argmin(np.abs(np.array(w_ev) - e_res))
+
+    complex_number = []
+
+    for col in dipole_data.columns[1:]:
+        dipole = np.pad(dipole_data[col]*decay, (0, num_zeros_to_pad),
+                        'constant', constant_values=(0, 0))
+        fft_dipole = np.fft.fft(dipole)
+        complex_number = np.append(complex_number, fft_dipole[res_index])
+    return complex_number
 
 
 def DCM_lineshape(energy_axis, z, phi, resonance_energy, gamma):
@@ -345,6 +409,35 @@ def model(IR_FWHM=186,
         dipole_response = np.append(
             dipole_response, fit_model_line(summed_line, e_axis))
     return dipole_response
+
+
+def get_complex_data(dataframe, transition, truncate=True, errors=False):
+    """
+    Reads in a DataFrame containing the 
+    """
+    time = dataframe['Time Delays'].to_numpy()
+    complex_dat = (
+        dataframe[f'Line Strength {transition}']*np.exp(1j*(dataframe[f'Phase {transition}'])))
+
+    if truncate:
+        lower_index, upper_index = truncate_td(
+            time, lower=-2.75, upper=2.75)
+        time = time[lower_index:upper_index]
+        complex_dat = complex_dat[lower_index:upper_index]
+
+    real = np.real(complex_dat)
+    imag = np.imag(complex_dat)
+
+    if errors:
+        error_complex = (
+            dataframe[f'Line Strength {transition} Error']*np.exp(1j*(dataframe[f'Phase {transition} Error'])))
+        if truncate:
+            error_complex = error_complex[lower_index:upper_index]
+        real_error = np.real(error_complex)
+        imag_error = np.imag(error_complex)
+        return real, imag, real_error, imag_error
+    else:
+        return real, imag
 
 
 def read_command_line():

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from helper_functions import fit_lineshapes
+from helper_functions import fit_lineshapes, get_complex_data, get_complex_dipole
 import numpy as np
 
 
@@ -107,4 +107,54 @@ def plot_populations(pop_file):
     ax.set_xbound(-8, 10)
     plt.tight_layout()
     ax.legend(loc='upper right')
+    plt.show()
+
+
+def plot_complex_single_intensity(RMT, exper, RMT_detuned, RMT_dipole):
+    real_rmt, imag_rmt = get_complex_data(
+        RMT, transition='T1', truncate=True)
+    real_rmt2, imag_rmt2 = get_complex_data(
+        RMT_detuned, transition='T1', truncate=True)
+    real_exper, imag_exper = get_complex_data(
+        exper, transition='T1', truncate=True)
+    complex_dipole = get_complex_dipole(RMT_dipole)
+
+    fig = plt.figure(1)
+    ax1 = fig.add_subplot(111, label="1")
+    ax2 = fig.add_subplot(111, label="2", frame_on=False)
+
+    ax1.plot(real_rmt, imag_rmt,
+             label='RMT',
+             color='#0d0887ff',
+             linewidth=2)
+    ax1.plot(real_rmt2, imag_rmt2,
+             label='RMT, detuned',
+             color='#cc4778ff',
+             linewidth=2)
+    ax1.plot(real_exper, imag_exper,
+             label='Exper.',
+             color='#f89540ff',
+             linewidth=2)
+
+    ax1.set_xlabel(r'Real')
+    ax1.set_ylabel(r'Imaginary')
+    ax1.legend()
+    ax1.axis('equal')
+
+    ax2.plot(-1*np.real(complex_dipole), np.imag(complex_dipole),
+             label='RMT direct (scaled)',
+             color='#1fae1fff',
+             linewidth=2)
+    ax2.set_xlabel(r'Direct RMT dipole')
+    ax2.set_ylabel(r'Direct RMT dipole')
+    ax2.xaxis.set_label_position('top')
+    ax2.yaxis.set_label_position('right')
+
+    ax2.xaxis.label.set_color('#1fae1fff')
+    ax2.tick_params(axis='x', colors='#1fae1fff')
+    ax2.yaxis.label.set_color('#1fae1fff')
+    ax2.tick_params(axis='y', colors='#1fae1fff')
+    ax2.xaxis.tick_top()
+    ax2.yaxis.tick_right()
+    ax2.axis('equal')
     plt.show()
