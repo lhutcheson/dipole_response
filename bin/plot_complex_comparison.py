@@ -1,6 +1,5 @@
 import pandas as pd
 from plotting import plot_complex_single_intensity
-from helper_functions import get_complex_dipole
 
 data_rmt = pd.read_csv('rmt/fit_params0.8.csv')
 data_dipole = pd.read_csv('rmt/dipole0.8.csv')
