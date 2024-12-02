@@ -152,21 +152,18 @@ def DCM_lineshape(energy_axis, z, phi, resonance_energy, gamma):
     """
     Dipole control model (DCM) line shape function for a single absorption line
 
-    Arguments:
-        - energy_axis : np.array
-                the array of values that defines the photon energy axis
-
-        - z :   float
-                line strength
-
-        - phi : float
-                dipole phase
-
-        - resonance_energy : float
-                resonance energy of the absorption line
-
-        - gamma :   float
-                line width
+    Parameters
+    ----------
+    energy_axis : np.array
+        the array of values that defines the photon energy axis
+    z :   float
+        line strength
+    phi : float
+        dipole phase
+    resonance_energy : float
+        resonance energy of the absorption line
+    gamma :   float
+        line width
 
     Returns:
         np.array size of energy axis
@@ -185,24 +182,21 @@ def fit_lineshapes(energy_axis, z, phi, gamma, background):
     Fit function to extract line shape parameters from several absorption lines
     from the measurement data. 
 
-    Arguments:
-        - energy_axis : np.array
-                the array of values that defines the photon energy axis
-
-        - z :   float
-                line strength
-
-        - phi : float
-                dipole phase
-
-        - resonance_energy : float
-                resonance energy of the absorption line
-
-        - gamma :   float
-                line width
+    Parameters
+    ----------
+    energy_axis : np.array
+        the array of values that defines the photon energy axis
+    z :   float
+        line strength
+    phi : float
+        dipole phase
+    resonance_energy : float
+        resonance energy of the absorption line
+    gamma :   float
+        line width
 
     Returns:
-        - model : np.array size of energy axis
+    model : np.array size of energy axis
             Calculates an optical density as a function of photon energy. 
             Includes a constant offset to fit the non-resonant background.
     """
@@ -212,11 +206,20 @@ def fit_lineshapes(energy_axis, z, phi, gamma, background):
     return model
 
 
-def truncate_td(time_delay_axis, lower=-1.1, upper=0.1):
+def truncate_td(time_delay_axis, lower=-2.75, upper=2.75):
     """
     Returns the indexes required for slicing data over a given time delay range [lower_time, upper_time]
 
-    time_delay_axis : time delay axis
+    Parameters
+    ----------
+    time_delay_axis : array
+        list of time delays time delays
+    lower: float
+        the lower bound of the desired range of time delays
+        default = -2.75
+    upper: float
+        the upper bound of the desired range of time delays
+        default = 2.75
     """
     lower_index = 0
     upper_index = -1
@@ -233,16 +236,17 @@ def gauss_envelope(intensity, time, FWHM=186):
     """
     Function to get the gaussian envelope of the NIR pulse. 
 
-    Arguments:
-        - intensity : float
-                intensity of the NIR pulse in 10^14 Wcm^-2
+    Parameters
+    ----------
+    intensity : float
+        intensity of the NIR pulse in 10^14 Wcm^-2
 
-        - time :    array
-                time axis
+    time :    array
+    time axis
 
-        - FWHM :    float
-                Full-width half-maximum of the NIR pulse in atomic units
-                Default is 4.5fs
+    FWHM :    float
+        Full-width half-maximum of the NIR pulse in atomic units
+        Default is 4.5fs
 
     Returns:
         np.array size of time axis
@@ -257,19 +261,20 @@ def pulse(intensity, time=np.arange(-10, 10, 0.1), FWHM=186, IR_freq=0.06798):
     """
     Function to get the NIR pulse with a gaussian envelope. 
 
-    Arguments:
-        - intensity : float
-                intensity of the NIR pulse in 10^14 Wcm^-2
+    Parameters
+    ----------
+    intensity : float
+        intensity of the NIR pulse in 10^14 Wcm^-2
 
-        - time :    array
-                time axis
+    time :    array
+        time axis
 
-        - FWHM :    float
-                Full-width half-maximum of the NIR pulse in atomic units
-                Default is 4.5fs
+    FWHM :    float
+        Full-width half-maximum of the NIR pulse in atomic units
+        Default is 4.5fs
 
-        - IR_freq : float
-                Frequency of the NIR pump pulse in atomic units
+    IR_freq : float
+        Frequency of the NIR pump pulse in atomic units
 
     Returns:
         np.array size of time axis
@@ -288,11 +293,12 @@ def fit_model_line(line, energy_axis):
     and return the complex dipole response in the form:
             z*exp(i*phi)
 
-    Arguments:
-        - line : array
+    Parameters
+    ----------
+    line : array
                 absorption line to be fitted
 
-        - energy_axis :    array
+    energy_axis :    array
                 energy axis
 
     Returns:
@@ -324,48 +330,49 @@ def model(IR_FWHM=186,
     Minimal model for the complex dipole response induced by a strong-field.
 
 
-    Arguments:
-        - IR_FWHM : float
+    Parameters
+    ----------
+    IR_FWHM : float
                 Default = 186 
                 FWHM of NIR pulse in atomic units of time
 
-        - IR_freq : float
+    IR_freq : float
                 Default = 0.06798, 
                 Frequency of NIR pulse in atomic units
 
-        - Max_ION : float
+    Max_ION : float
                 Default = 0.08, 
                 Maximum amplitude of the ionisation channel
 
-        - Max_E1 : float
+    Max_E1 : float
                 Default = 0.03,
                 Maximum amplitude of the 1st excitation channel
 
-        - Max_E2 : float
+    Max_E2 : float
                 Default = 0.03, 
                 Maximum amplitude of the 2nd excitation channel
 
-        - Phi_ION : Float
+    Phi_ION : Float
                 Default = 0, 
                 Phase assigned to the ionisation channel (radians)
 
-        - Phi_E1 : Float
+    Phi_E1 : Float
                 Default = -2.2, 
                 Phase assigned to the 1st excitation channel (radians)
 
-        - Phi_E2 : Float
+    Phi_E2 : Float
                 Default = -1.3, 
                 Phase assigned to the 2nd excitation channel (radians)
 
-        - excited_delay :  Float
+    excited_delay :  Float
                 Default = 0.3, 
                 delay between the two excitation channels in femtoseconds
 
-        - time : numpy array
+    time : numpy array
                 Default = np.arange(-10, 10, 0.1),
                 the time axis to be used
 
-        - smooth : Boolean
+    smooth : Boolean
                 Default = False 
                 Option to model the overall response using the NIR envelope instead of the pulse
 
@@ -411,9 +418,29 @@ def model(IR_FWHM=186,
     return dipole_response
 
 
-def get_complex_data(dataframe, transition, truncate=True, errors=False):
+def get_complex_data(dataframe, transition='T1', truncate=True):
     """
-    Reads in a DataFrame containing the 
+    Reads in a DataFrame containing the line strength (Z) and dipole phase (phi)
+    fit parameters to the absorption spectrum for each time delay. Returns
+    the complex-valued dipole response of the form:
+            Z*exp(i*phi)
+    for the desired transition (T1, T2 or T3).
+
+    Parameters:
+    -----------
+    dataframe: Pandas DataFrame
+        dataframe containing the fit parameters for each time delay
+    transition: string
+        which transition to use
+        default = T1
+    truncate: boolean
+        option to truncate the time-delay scan to a subset of time delays
+
+    Returns:
+    real: array
+        the real part of the complex dipole response for each time delay
+    image: array
+        the imaginary part of the complex dipole response for each time delay
     """
     time = dataframe['Time Delays'].to_numpy()
     complex_dat = (
@@ -428,16 +455,7 @@ def get_complex_data(dataframe, transition, truncate=True, errors=False):
     real = np.real(complex_dat)
     imag = np.imag(complex_dat)
 
-    if errors:
-        error_complex = (
-            dataframe[f'Line Strength {transition} Error']*np.exp(1j*(dataframe[f'Phase {transition} Error'])))
-        if truncate:
-            error_complex = error_complex[lower_index:upper_index]
-        real_error = np.real(error_complex)
-        imag_error = np.imag(error_complex)
-        return real, imag, real_error, imag_error
-    else:
-        return real, imag
+    return real, imag
 
 
 def read_command_line():
