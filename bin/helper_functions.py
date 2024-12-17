@@ -131,7 +131,7 @@ def AugerDecayFactor(time_in_au, t_zero=904.1058):
     return decay
 
 
-def get_complex_dipole(dipole_data, e_res=60.85):
+def get_complex_dipole(dipole_data, resonance_energy=60.85):
     """
     From the time-dependent dipole expectation value obtained from RMT,
     calculate the frequency-resolved dipole evaluated at the energy of the
@@ -144,9 +144,11 @@ def get_complex_dipole(dipole_data, e_res=60.85):
     dipole_data : Pandas DataFrame
         DataFrame containing the time-dependent dipole expectation value for
         each time delay in the scan.
-    e_res : float
-        Default = 60.87 the energy of the transition under investigation in the
-        ATAS study.
+    resonance_energy : float
+        Default = 60.87
+        the energy of the transition under investigation in the ATAS study.
+        *Default is shifted by 5.5 eV due to incorrect energy in RMT atomic
+        structure
     """
     file_length = len(dipole_data)
     desired_length = 2**22
@@ -158,7 +160,7 @@ def get_complex_dipole(dipole_data, e_res=60.85):
     w = np.fft.fftfreq(desired_length, dt/(2*np.pi))
     w_ev = au_to_ev(w)
 
-    res_index = np.argmin(np.abs(np.array(w_ev) - e_res))
+    res_index = np.argmin(np.abs(np.array(w_ev) - resonance_energy))
 
     complex_number = []
 
@@ -227,6 +229,38 @@ def fit_lineshapes(energy_axis, z, phi, gamma, background):
     return model
 
 
+def fit_lineshapes_linear_bkgd(energy_axis, z, phi, gamma, m, c):
+    """
+    Fit function to extract line shape parameters from several absorption lines
+    from the measurement data. I omitted the convolution with the experimenta
+    spectral resolution which only marginally affects the fit results anyway.
+    This includes a linear background term in the fitting
+
+    Parameters
+    ----------
+    energy_axis : the array of values that defines the photon energy axis
+    z : the amplitude of the line shape
+    phi : the phase of the line shape
+    gamma : the width of the line shape
+    m : the gradient of the linear background
+    c : the y-intercept of the linear background
+
+    Returns
+    -------
+    model : np.array size of energy axis
+        Calculates an optical density as a function of photon energy by adding
+        up the line shape functions of N absorption lines. Includes a constant
+        offset to fit the non-resonant background.
+    """
+    model = np.zeros(energy_axis.shape)
+
+    model += DCM_lineshape(energy_axis,
+                           z*gamma, phi, e_res, gamma)
+    model *= energy_axis * lineshape_constant
+    model += c + m*(energy_axis-55)
+    return model
+
+
 def truncate_td(time_delay_axis, lower=-2.75, upper=2.75):
     """
     Returns the indexes required for slicing data over a given time delay range
@@ -279,7 +313,7 @@ def gauss_envelope(intensity, time, FWHM=186):
     return E0 * np.exp(-((time_au)**2)/(FWHM**2))
 
 
-def pulse(intensity, time=np.arange(-10, 10, 0.1), FWHM=186, IR_freq=0.06798):
+def pulse(intensity, time=np.arange(-10, 10, 0.1), FWHM=186, IR_freq=0.05995):
     """
     Function to get the NIR pulse with a gaussian envelope.
 
@@ -337,15 +371,22 @@ def fit_model_line(line, energy_axis):
     return strength*np.exp(1j*phase)
 
 
+def get_dipole(strength, phase):
+    """
+    Returns the dipole response for a given dipole strength and phasem shift
+    """
+    return strength*np.exp(1j*phase)
+
+
 def model(IR_FWHM=186,
-          IR_freq=0.06798,
+          IR_freq=0.05995,
           Max_ION=0.08,
           Max_E1=0.03,
           Max_E2=0.03,
           Phi_ION=0,
           Phi_E1=-2.38,
           Phi_E2=-1.31,
-          excited_delay=0.0,
+          excited_delay=0.3,
           time=np.arange(-10, 10, 0.1),
           smooth=False):
     """
@@ -359,7 +400,7 @@ def model(IR_FWHM=186,
         FWHM of NIR pulse in atomic units of time
 
     IR_freq : float
-        Default = 0.06798
+        Default = 0.05995
         Frequency of NIR pulse in atomic units
 
     Max_ION : float
@@ -428,14 +469,14 @@ def model(IR_FWHM=186,
     dipole_response = []
 
     for ion, e1, e2 in zip(ION_amplitude, E1_amplitude, E2_amplitude):
-        ion_line = fit_lineshapes(e_axis, ion, Phi_ION, L, 0)
-        e1_line = fit_lineshapes(e_axis, e1, Phi_E1, L, 0)
-        e2_line = fit_lineshapes(e_axis, e2, Phi_E2, L, 0)
+        ion_line = get_dipole(ion, Phi_ION)
+        e1_line = get_dipole(e1, Phi_E1)
+        e2_line = get_dipole(e2, Phi_E2)
 
         summed_line = ion_line + e1_line + e2_line
 
         dipole_response = np.append(
-            dipole_response, fit_model_line(summed_line, e_axis))
+            dipole_response, summed_line)
     return dipole_response
 
 
@@ -465,8 +506,8 @@ def get_complex_data(dataframe, transition='T1', truncate=True):
     """
     time = dataframe['Time Delays'].to_numpy()
     complex_dat = (
-        dataframe[f'Line Strength {transition}'] * np.exp(
-            1j*(dataframe[f'Phase {transition}'])))
+        dataframe[f'Line Strength'] * np.exp(
+            1j*(dataframe[f'Phase'])))
 
     if truncate:
         lower_index, upper_index = truncate_td(
@@ -497,7 +538,7 @@ def read_command_line():
     if not args['plot']:
         args['output'] = True
     roi_lo = e_res - energy_shift - 5
-    roi_hi = e_res - energy_shift + 10
+    roi_hi = e_res - energy_shift + 5
     args['roi'] = [roi_lo, roi_hi]
     args['energy_shift'] = energy_shift
     return args
