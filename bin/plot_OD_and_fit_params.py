@@ -1,14 +1,15 @@
 import pandas as pd
 from plotting import plot_fit_params, plot_OD
 
-exper_fits = pd.read_csv('data/experiment/fit_params0.94482114.csv')
+exper_fits = pd.read_csv('data/experimental/fit_params0.94482114.csv')
 RMT_fits = pd.read_csv('data/rmt/fit_params0.8.csv')
-RMT_detune_fits = pd.read_csv('data/rmt_xuv_detuned/fit_params0.8.csv')
+RMT_detune_fits = pd.read_csv('data/rmt_detuned/fit_params0.8.csv')
 
 # Create the first set of plots
 fig, axs = plot_fit_params(exper_fits,
                            label='Experiment',
-                           colour='#f89540ff')
+                           colour='#f89540ff',
+                           marks='o')
 
 # Add the second set of plots to the same figure
 fig, axs = plot_fit_params(RMT_fits,
@@ -20,12 +21,12 @@ fig, axs = plot_fit_params(RMT_fits,
 # Add another set if needed
 fig, axs = plot_fit_params(RMT_detune_fits,
                            colour='#cc4778ff',
-                           label='RMT, detuned',
+                           label='RMT, XUV detuned',
                            fig=fig,
                            axs=axs)
 
 exper_data = pd.read_csv(
-    'data/experiment/OD0.94482114.csv').set_index('Energy')
+    'data/experimental/OD0.94482114.csv').set_index('Energy')
 RMT_data = pd.read_csv('data/RMT/OD0.8.csv').set_index('Energy')
 
 plot_OD(exper_data, RMT_data)
