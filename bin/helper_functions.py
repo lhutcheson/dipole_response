@@ -506,8 +506,8 @@ def get_complex_data(dataframe, transition='T1', truncate=True):
     """
     time = dataframe['Time Delays'].to_numpy()
     complex_dat = (
-        dataframe[f'Line Strength'] * np.exp(
-            1j*(dataframe[f'Phase'])))
+        dataframe[f'Line Strength {transition}'] * np.exp(
+            1j*(dataframe[f'Phase {transition}'])))
 
     if truncate:
         lower_index, upper_index = truncate_td(

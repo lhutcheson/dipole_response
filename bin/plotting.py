@@ -1,12 +1,18 @@
 import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 from helper_functions import (fit_lineshapes,
                               get_complex_data,
                               get_complex_dipole,
                               au_to_fs)
 import numpy as np
 
+plt.rcParams.update({'font.family': f"Libertinus Sans",
+                     'font.size': 20
+                    #  "figure.autolayout": True
+                     })
 
-def plot_fit_params(params, label, colour, truncate=True, fig=None, axs=None):
+
+def plot_fit_params(params, label, colour, marks=None, truncate=True, fig=None, axs=None):
     """
     Given the time-delays and the fit parameters, plot the line strength,
     phase, and line width as a function of time delay on the provided figure
@@ -55,25 +61,27 @@ def plot_fit_params(params, label, colour, truncate=True, fig=None, axs=None):
 
     # If no figure or axes are provided, create them
     if fig is None or axs is None:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 6))
         axs = [ax1, ax2]
         ax1.set_title(r'Strength $z$')
         ax2.set_title(r'Phase $\varphi$ (rad.)')
+        ax1.set_xlabel('Time delay (fs)')
+        ax2.set_xlabel('Time delay (fs)')
+        ax1.minorticks_on()
+        ax2.minorticks_on()
+        plt.gcf().text(0, 0.95, '(b)', fontsize=20)
 
     # Plot data on the axes
     for parameter, ax in zip(['Line Strength T1', 'Phase T1'], axs):
         ax.plot(params['Time Delays'], params[parameter],
-                color=colour, label=label)
+                color=colour, label=label, marker=marks, linewidth=2, ms=5)
         ax.fill_between(
             params['Time Delays'],
             params[parameter] + params[f'{parameter} Error'],
             params[parameter] - params[f'{parameter} Error'],
             facecolor=colour, alpha=0.35)
 
-    # Label axes
-    axs[0].set_xlabel('Time delay (fs)')
-    axs[1].set_xlabel('Time delay (fs)')
-    plt.legend()
+    plt.legend(fontsize=18, handlelength=1.5, loc='upper center')
     return fig, axs
 
 
@@ -99,8 +107,11 @@ def plot_OD(OD_exper, OD_RMT):
     paramdict = {'cmap': 'plasma', 'shading': 'nearest'}
 
     # Create subplots for experimental and reconstructed OD
-    fig, ax = plt.subplots(nrows=1, ncols=2, num=5)
+    fig, ax = plt.subplots(nrows=1, ncols=2, num=5, figsize=(10, 6))
     fig.subplots_adjust(right=0.9, left=0.1, top=0.9, bottom=0.15, wspace=0.2)
+    plt.gcf().text(0, 0.95, '(a)', fontsize=20)
+    ax[1].minorticks_on()
+    ax[0].minorticks_on()
 
     # Plot the experimental optical density
     ax[0].pcolor(OD_exper.index.values,
@@ -125,8 +136,8 @@ def plot_OD(OD_exper, OD_RMT):
     ax[1].set_xlabel(r'Photon energy (eV)')
     ax[0].set_xlim([55, 56])
     ax[1].set_xlim([55, 56])
-    ax[0].set_title('Experiment', fontsize=12, pad=1)
-    ax[1].set_title('RMT', fontsize=12, pad=1)
+    ax[0].set_title('Experiment', pad=1)
+    ax[1].set_title('RMT', pad=1)
 
     # Show the plot
     plt.show()
@@ -388,7 +399,9 @@ def plot_complex_single_intensity(RMT, exper, RMT_detuned, RMT_dipole):
     ax1.plot(real_exper, imag_exper,
              label='Exper.',
              color='#f89540ff',
-             linewidth=2)
+             linewidth=2,
+             marker='o',
+             ms=5)
 
     ax1.set_xlabel(r'Real')
     ax1.set_ylabel(r'Imaginary')
