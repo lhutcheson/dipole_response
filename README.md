@@ -1,4 +1,4 @@
-# dipole_response
+# Dipole response induced by strong-field ionisation
 Data and code for replicating results in the paper:
 
 "Phase evolution of strong-field ionization"
