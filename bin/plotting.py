@@ -7,7 +7,7 @@ from helper_functions import (fit_lineshapes,
 import numpy as np
 
 plt.rcParams.update({'font.family': f"Libertinus Sans",
-                     'font.size': 20
+                     'font.size': 25
                     #  "figure.autolayout": True
                      })
 
@@ -109,7 +109,7 @@ def plot_OD(OD_exper, OD_RMT):
     # Create subplots for experimental and reconstructed OD
     fig, ax = plt.subplots(nrows=1, ncols=2, num=5, figsize=(10, 6))
     fig.subplots_adjust(right=0.9, left=0.1, top=0.9, bottom=0.15, wspace=0.2)
-    plt.gcf().text(0, 0.95, '(a)', fontsize=20)
+    plt.gcf().text(0, 0.95, '(a)', fontsize=25)
     ax[1].minorticks_on()
     ax[0].minorticks_on()
 
@@ -136,6 +136,8 @@ def plot_OD(OD_exper, OD_RMT):
     ax[1].set_xlabel(r'Photon energy (eV)')
     ax[0].set_xlim([55, 56])
     ax[1].set_xlim([55, 56])
+    ax[0].set_ylim([-3, 3])
+    ax[1].set_ylim([-3, 3])
     ax[0].set_title('Experiment', pad=1)
     ax[1].set_title('RMT', pad=1)
 
@@ -299,7 +301,7 @@ def plot_model_complex(complex_dipole_response,
     plt.show()
 
 
-def plot_populations(pop_file):
+def plot_populations(pop_file, pulse=None, intensity='0.8'):
     """
     Plot the time-dependent populations of different regions/states: ground
     state, outer region, and bound state as a function of time. The function
@@ -318,6 +320,8 @@ def plot_populations(pop_file):
         - 'Outer': The population of the outer region at each time point.
         - 'Bound': The total population of the bound states in the 1PO symmetry
                     at each time point.
+    intensity : string
+        The desired NIR intensity to be plotted.
     """
     # Convert time to femtoseconds and shift such that centre of NIR pulse is
     # at 0fs
@@ -325,26 +329,39 @@ def plot_populations(pop_file):
 
     fig = plt.figure(1)
     ax = fig.add_subplot(111)
-    ax2 = ax.twinx()
 
-    ax2.plot(time_fs, pop_file['Ground'],
+    ax2 = ax.twinx()
+    if pulse is not None:
+        pulse_time = np.arange(-10, 10, 0.1)
+        ax.fill_between(pulse_time, 0.075*(pulse/np.amax(pulse))**2,
+                        color='lightgray', alpha=0.8)
+
+    ax2.plot(time_fs, pop_file[f'Ground {intensity}'],
              color='darkorange', linewidth=2, alpha=0.8)
-    ax2.set_ylabel('GS Pop.')
+    ax2.set_ylabel('Ground State Population')
     ax2.set_xlabel('Time (fs)')
     ax2.yaxis.label.set_color('darkorange')
     ax2.set_ybound(0.6, 1.01)
-    ax2.tick_params(axis='y', colors='darkorange')
 
-    ax.plot(time_fs, pop_file['Outer'],
-            color='#7f3aacfd', linewidth=2, label='Outer Region Population')
-    ax.plot(time_fs, pop_file['Bound'],
-            color='#71c837ff', linewidth=2, label='Bound Population')
+    ax.plot(time_fs, pop_file[f'Outer {intensity}'],
+            color='#7f3aacfd', linewidth=2, label='\'Ionised\'')
+    ax.plot(time_fs, pop_file[f'Bound {intensity}'],
+            color='#71c837ff', linewidth=2, label='Bound')
 
     ax.set_ylabel('Population')
     ax.set_xlabel('Time (fs)')
     ax.set_xbound(-8, 10)
     plt.tight_layout()
-    ax.legend(loc='upper right')
+    ax.legend(loc='center right')
+    ax.xaxis.set_minor_locator(AutoMinorLocator())
+    ax2.yaxis.set_minor_locator(AutoMinorLocator())
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
+    ax.tick_params(which='major', length=7)
+    ax2.tick_params(which='major', length=7)
+    ax.tick_params(which='minor', length=3)
+    ax2.tick_params(which='minor', length=3)
+    ax2.tick_params(axis='y', which='both', colors='darkorange')
+
     plt.show()
 
 
